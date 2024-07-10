@@ -1,15 +1,40 @@
 using CustomerAdditionalInfoApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = false,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("MIICWwIBAAKBgHZO8IQouqjDyY47ZDGdw9j"))
+    };
+});
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/customerAdditionalInfos/{customerId}", async (string customerId) =>
 {
     var customerAdditionalInfo = GetCustomerAdditionalInfos().FirstOrDefault(a => a.CustomerId == customerId);
 
     return customerAdditionalInfo is CustomerAdditionalInfo info ? Results.Ok(info) : Results.NotFound();
-});
+}).RequireAuthorization();
 
 List<CustomerAdditionalInfo> GetCustomerAdditionalInfos()
 {

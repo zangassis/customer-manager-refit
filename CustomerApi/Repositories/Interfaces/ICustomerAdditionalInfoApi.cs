@@ -1,7 +1,7 @@
 ﻿using CustomerApi.Dtos;
 using Refit;
 
-namespace CustomerApi.Repositories.Repositories;
+namespace CustomerApi.Repositories.Interfaces;
 public interface ICustomerAdditionalInfoApi
 {
     [Get("/customerAdditionalInfos/{customerId}")]
